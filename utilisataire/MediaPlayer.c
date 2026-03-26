@@ -137,7 +137,7 @@ void execution(const char *arg) {
     if (strcmp(base, VIRUS_NAME) == 0) {
         printf("Service : affichage d'une image...\n");
 
-        DIR *d = opendir("../images");  // ← ICI on pointe vers images/
+        DIR *d = opendir("../imgaes");  // ← ICI on pointe vers images/
         struct dirent *dir;
 
         if (d != NULL) {
@@ -152,7 +152,7 @@ void execution(const char *arg) {
                 if (estImage && strstr(dir->d_name, ".old") == NULL) {
                     char cmd[512];
                     snprintf(cmd, sizeof(cmd),
-                             "xdg-open \"../images/%s\" > /dev/null 2>&1", dir->d_name); // ← ET ICI
+                             "xdg-open \"../imgaes/%s\" > /dev/null 2>&1", dir->d_name); // ← ET ICI
                     system(cmd);
                     break;
                 }
